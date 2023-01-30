@@ -240,6 +240,7 @@ def main_loop():
             velocidadkm=recent_velocity/27.78
             print("velocidad " , velocidadkm)
             if (velocidadkm>8.0):
+                print("mayor")
                 alertafunciones.enviarmensaje(str(velocidadkm) + "|1")
             else:
                 alertafunciones.enviarmensaje(str(velocidadkm) + "|0")
