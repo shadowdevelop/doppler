@@ -239,7 +239,7 @@ def main_loop():
             recent_velocity = velocity
             velocidadkm=recent_velocity/27.78
             print("velocidad " , velocidadkm)
-            if (velocidadkm>8):
+            if (velocidadkm>8.0):
                 alertafunciones.enviarmensaje(str(velocidadkm) + "|1")
             else:
                 alertafunciones.enviarmensaje(str(velocidadkm) + "|0")
