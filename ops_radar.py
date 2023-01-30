@@ -237,10 +237,11 @@ def main_loop():
                 continue
 
             recent_velocity = velocity
-            if (recent_velocity>8):
-                alertafunciones.enviarmensaje(str(recent_velocity) + "|1")
+            velocidadkm=recent_velocity/27.78
+            if (velocidadkm>8):
+                alertafunciones.enviarmensaje(str(velocidadkm) + "|1")
             else:
-                alertafunciones.enviarmensaje(str(recent_velocity) + "|0")
+                alertafunciones.enviarmensaje(str(velocidadkm) + "|0")
 
             logging.debug(f'analyze received speed:{abs(recent_velocity)}')
             tracking_current_time = time.time()
