@@ -42,7 +42,7 @@ OPS24X_OUTBOUND_ONLY = "R|"
 OPS24X_DIRECTION_PREF = OPS24X_BIDIRECTIONAL
 
 # These are for lab development only, so hand-waves are usable
-OPS24X_UNITS_PREF = 'UC'  # "UC" for cm/s
+OPS24X_UNITS_PREF = 'UK'  # "UC" for cm/s kmph mph 
 TARGET_MAX_SPEED_ALLOWED = 150
 OPS24X_DIRECTION_PREF = OPS24X_INBOUND_ONLY
 # remove them when moving to actual vehicle testing.
@@ -87,20 +87,42 @@ def read_velocity():
         Negative speed -> object moving away from sensor
         None -> something else was received (blank line, command reply, etc)
     """
+    
     global serial_port
     object_velocity = 0.0
     ops24x_rx_bytes = serial_port.readline()
     ops24x_rx_bytes_length = len(ops24x_rx_bytes)
+    tipos=['"mph"','"kmph"','"cmps"']
     # a case can be made that if the length is 0, it's a newline char so try again
     if ops24x_rx_bytes_length != 0:
-        ops24x_rx_str = str(ops24x_rx_bytes)
-        if ops24x_rx_str.find('{') == -1:  # really, { would only be found in first char
-            try:
-                # Speed data found (maybe)
-                object_velocity = float(ops24x_rx_bytes)
-                return object_velocity
-            except ValueError:  # well just toss this line out
-                return None
+        ops24x_rx_str = str.rstrip(str(ops24x_rx_bytes.decode('utf-8', 'strict')))# str(ops24x_rx_bytes)
+        # print("lectura: ",ops24x_rx_str," bytes ",ops24x_rx_bytes)
+        if ops24x_rx_str.find('{') == -1:  # really, { would only be found in first char            
+            if (ops24x_rx_str.find(',')==-1):
+                try:
+                    # Speed data found (maybe)
+                    object_velocity = float(ops24x_rx_bytes)                
+                    return object_velocity
+                except ValueError:  # well just toss this line out
+                    # print('no puedo convertir')
+                    return None
+            else:
+                try:
+                    valuearray=ops24x_rx_str.split(',')
+                    if (len(valuearray)==2):
+                        object_velocity = float(valuearray[1])     
+                        if str(valuearray[0]) in tipos:
+                            object_velocity = float(valuearray[1])     
+                            # print ("velocidad posible : ",object_velocity)           
+                            return object_velocity
+                        else:
+                            # print("no esta en array" , valuearray[0], " arrreglo ",tipos)
+                            return None                        
+                    else:
+                        return None
+                except ValueError:
+                    return None
+            
     return None
 
 
@@ -201,6 +223,7 @@ def main_loop():
             while not is_valid_speed:
                 # Get speed from OPS24x
                 velocity = read_velocity()
+                # print("lleyo:",velocity)
                 if velocity is not None:
                     recent_velocity = velocity
                     is_valid_speed = is_speed_in_allowed(recent_velocity)
@@ -238,8 +261,9 @@ def main_loop():
 
             recent_velocity = velocity
             velocidadkm=recent_velocity/27.78
+            velocidadkm=velocity
             print("velocidad " , velocidadkm)
-            if (velocidadkm>8.0):
+            if (velocidadkm>4.0):
                 print("mayor")
                 alertafunciones.enviarmensaje(str(velocidadkm) + "|1")
             else:
